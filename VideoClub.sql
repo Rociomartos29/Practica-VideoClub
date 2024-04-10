@@ -1,7 +1,5 @@
-
 CREATE SCHEMA videoclub;
-set schema  'videoclub';
-
+set schema 'videoclub';
 
 CREATE TABLE socio (
     numero_socio SERIAL PRIMARY KEY,
@@ -13,43 +11,33 @@ CREATE TABLE socio (
     id_direccion INTEGER
 );
 
-
 ALTER TABLE socio ALTER COLUMN dni TYPE VARCHAR(50);
 ALTER TABLE socio ALTER COLUMN telefono TYPE VARCHAR(50);
 ALTER TABLE socio ALTER COLUMN nombre TYPE VARCHAR(50);
 
-
 CREATE TABLE pelicula (
     id_pelicula SERIAL PRIMARY KEY,
     titulo VARCHAR(500) NOT NULL,
-    genero INTEGER NOT NULL,
+    genero TEXT NOT NULL,
     fecha_estreno DATE NOT NULL,
     director VARCHAR(30) NOT NULL,
     sinopsi TEXT NOT NULL,
-    num_copias INTEGER NOT NULL,
-    id_genero INTEGER
+    num_copias INTEGER NOT NULL
 );
-alter table pelicula 
-alter column genero type text;
-
 
 CREATE TABLE prestamos (
     id_prestamos SERIAL PRIMARY KEY,
     num_socio INTEGER NOT NULL,
     fecha_prestacion DATE NOT NULL,
     fecha_devolucion DATE,
-    id_socio_genero_favorito INTEGER NOT NULL,
-    id_pelicula INTEGER 
+    id_copia INTEGER NOT NULL
 );
-
 
 CREATE TABLE copias (
-    id_copias SERIAL PRIMARY KEY,
-    num_copias INTEGER NOT NULL,
-    id_pelicula INTEGER NOT NULL ,
-    id_prestamos INTEGER
+    id_copia SERIAL PRIMARY KEY,
+    id_pelicula INTEGER NOT NULL,
+    FOREIGN KEY (id_pelicula) REFERENCES pelicula(id_pelicula)
 );
-
 
 CREATE TABLE direccion (
     id_direccion SERIAL PRIMARY KEY,
@@ -58,20 +46,6 @@ CREATE TABLE direccion (
     numero INTEGER NOT NULL,
     piso VARCHAR(3) NOT NULL
 );
-
-
-CREATE TABLE genero (
-    id_genero SERIAL PRIMARY KEY,
-    nombre_genero VARCHAR(15) NOT NULL
-);
-
-
-CREATE TABLE socio_genero_favorito (
-    id_socio_genero_favorito SERIAL PRIMARY KEY,
-    num_socio INTEGER NOT NULL,
-    id_genero_favorito INTEGER NOT NULL
-);
-
 
 CREATE TABLE tmp_videoclub (
     id_copia INTEGER NULL,
@@ -98,7 +72,6 @@ CREATE TABLE tmp_videoclub (
     num_socio INTEGER
 );
 
-
 ALTER TABLE tmp_videoclub
 ADD COLUMN num_socio_new SERIAL;
 
@@ -114,49 +87,15 @@ DROP COLUMN num_socio;
 ALTER TABLE tmp_videoclub
 RENAME COLUMN num_socio_new TO num_socio;
 
-
-ALTER TABLE socio_genero_favorito
-ADD CONSTRAINT fk_socio_genero_favorito_socio
-FOREIGN KEY (num_socio)
-REFERENCES socio (numero_socio);
-
-ALTER TABLE socio_genero_favorito
-ADD CONSTRAINT fk_socio_genero_favorito_genero
-FOREIGN KEY (id_genero_favorito)
-REFERENCES genero (id_genero);
-
+ALTER TABLE prestamos
+ADD CONSTRAINT fk_prestamos_copias
+FOREIGN KEY (id_copia)
+REFERENCES copias (id_copia);
 
 ALTER TABLE prestamos
 ADD CONSTRAINT fk_prestamos_socio
 FOREIGN KEY (num_socio)
 REFERENCES socio (numero_socio);
-
-
-ALTER TABLE prestamos
-ADD CONSTRAINT fk_prestamos_pelicula
-FOREIGN KEY (id_pelicula)
-REFERENCES pelicula (id_pelicula);
-
-
-
-ALTER TABLE copias
-ADD CONSTRAINT fk_copias_pelicula
-FOREIGN KEY (id_pelicula)
-REFERENCES pelicula (id_pelicula);
-
-
-ALTER TABLE copias
-ADD CONSTRAINT fk_copias_prestamos
-FOREIGN KEY (id_prestamos)
-REFERENCES prestamos (id_prestamos);
-
-
-ALTER TABLE socio
-ADD CONSTRAINT fk_socio_direccion
-FOREIGN KEY (id_direccion)
-REFERENCES direccion (id_direccion)
-ON DELETE SET NULL;
-
 
 INSERT INTO tmp_videoclub (id_copia,fecha_alquiler_texto,dni,nombre,apellido_1,apellido_2,email,telefono,codigo_postal,fecha_nacimiento,numero,piso,letra,calle,ext,titulo,genero,sinopsis,director,fecha_alquiler,fecha_devolucion) VALUES
 	 (3,'2024-01-28','1124603H','Ivan','Santana','Medina','ivan.santana.medina@gmail.com','694804631','47007','2005-02-15','6','3','D','Francisco Pizarro','3D','El padrino','Drama','Don Vito Corleone, conocido dentro de los círculos del hampa como ''El Padrino'', es el patriarca de una de las cinco familias que ejercen el mando de la Cosa Nostra en Nueva York en los años cuarenta. Don Corleone tiene cuatro hijos: una chica, Connie, y tres varones; Sonny, Michael y Fredo. Cuando el Padrino reclina intervenir en el negocio de estupefacientes, empieza una cruenta lucha de violentos episodios entre las distintas familias del crimen organizado.','Francis Ford Coppola','2024-01-28',NULL),
@@ -676,75 +615,55 @@ INSERT INTO tmp_videoclub (id_copia,fecha_alquiler_texto,dni,nombre,apellido_1,a
 	 (305,'2024-01-22','5653366N','Maria nieves','Lozano','Leon','maria nieves.lozano.leon@gmail.com','680082585','47003','2002-01-06','21','2','Der.','Hernán Cortés','2Der.','La doncella','Thriller','Corea, década de 1930, durante la colonización japonesa. Una joven llamada Sookee es contratada como doncella de una rica mujer japonesa, Hideko, que vive recluida en una gran mansión bajo la influencia de un tirano. Sookee guarda un secreto y con la ayuda de un estafador que se hace pasar por un conde japonés, planea algo para Hideko.','Park Chan-wook','2024-01-22',NULL),
 	 (306,'2024-01-07','6810904Y','Hugo','Torres','Ferrer','hugo.torres.ferrer@gmail.com','649016903','47006','1994-06-05','50','1','Der.','Federico García Lorca','1Der.','La doncella','Thriller','Corea, década de 1930, durante la colonización japonesa. Una joven llamada Sookee es contratada como doncella de una rica mujer japonesa, Hideko, que vive recluida en una gran mansión bajo la influencia de un tirano. Sookee guarda un secreto y con la ayuda de un estafador que se hace pasar por un conde japonés, planea algo para Hideko.','Park Chan-wook','2024-01-07','2024-01-08'),
 	 (308,'2024-01-25','1638778M','Angel','Lorenzo','Caballero','angel.lorenzo.caballero@gmail.com','698073069','47008','2011-07-30','82','1','Izq.','Sol','1Izq.','El bazar de las sorpresas','Comedia','Alfred Kralik es el tímido jefe de vendedores de Matuschek y Compañía, una tienda de Budapest. Todas las mañanas, los empleados esperan juntos la llegada de su jefe, Hugo Matuschek. A pesar de su timidez, Alfred responde al anuncio de un periódico y mantiene un romance por carta. Su jefe decide contratar a una tal Klara Novak en contra de la opinión de Alfred. En el trabajo, Alfred discute constantemente con ella, sin sospechar que es su corresponsal secreta.','Ernst Lubitsch','2024-01-25',NULL);
--- Inserto datos en la tabla socio
 INSERT INTO socio (nombre, apellidos, fecha_nacimiento, telefono, dni)
-SELECT DISTINCT nombre,  concat(apellido_1, ' ', apellido_2) apellidos, CAST(fecha_nacimiento AS DATE), telefono, dni
+SELECT DISTINCT nombre, CONCAT(apellido_1, ' ', apellido_2) apellidos, CAST(fecha_nacimiento AS DATE), telefono, dni
 FROM tmp_videoclub
 WHERE fecha_nacimiento IS NOT NULL;
 
--- Inserto datos en la tabla pelicula
 INSERT INTO pelicula (titulo, genero, fecha_estreno, director, sinopsi, num_copias)
 SELECT DISTINCT
-   titulo,
-   genero,
-   '2024-01-01'::date, -- Valor predeterminado para fecha_estreno
-   director,
-   sinopsis,
-   COUNT(id_copia) AS num_copias
+    titulo,
+    genero,
+    '2024-01-01'::date,
+    director,
+    sinopsis,
+    COUNT(id_copia) AS num_copias
 FROM
-   tmp_videoclub
+    tmp_videoclub
 GROUP BY
-   titulo, genero, director, sinopsis;
+    titulo, genero, director, sinopsis;
 
- -- Inserto datos en la tabla prestamos
-ALTER TABLE prestamos
-DROP COLUMN id_socio_genero_favorito;
-INSERT INTO prestamos (num_socio, id_pelicula, fecha_prestacion, fecha_devolucion)
-SELECT DISTINCT
-   s.numero_socio,
-   p.id_pelicula,
-   CAST(tv.fecha_alquiler_texto AS DATE),
-   CAST(tv.fecha_devolucion AS DATE)
-FROM
-   tmp_videoclub tv
-INNER JOIN socio s ON tv.dni = s.dni
-INNER JOIN pelicula p ON tv.titulo = p.titulo;
-
--- Inserto datos en la tabla copias
-INSERT INTO copias (num_copias, id_pelicula, id_prestamos)
-SELECT COUNT(tv.id_copia) AS num_copias, p.id_pelicula, pr.id_prestamos
-FROM tmp_videoclub tv
-INNER JOIN pelicula p ON tv.titulo = p.titulo
-LEFT JOIN prestamos pr ON tv.num_socio = pr.num_socio AND tv.fecha_alquiler = pr.fecha_prestacion
-GROUP BY p.id_pelicula, pr.id_prestamos;
-
--- Inserto datos en la tabla direccion
 INSERT INTO direccion (codigo_postal, calle, numero, piso)
 SELECT DISTINCT codigo_postal, calle, CAST(numero AS INTEGER), piso
 FROM tmp_videoclub;
 
--- Inserto datos en la tabla genero
-INSERT INTO genero (nombre_genero)
-SELECT DISTINCT genero
-FROM tmp_videoclub;
+INSERT INTO copias (id_pelicula)
+SELECT id_pelicula
+FROM pelicula;
 
--- Inserto datos en la tabla socio_genero_favorito
-INSERT INTO socio_genero_favorito (num_socio, id_genero_favorito)
-SELECT s.numero_socio, g.id_genero
-FROM socio s
-INNER JOIN tmp_videoclub tv ON s.dni = tv.dni
-INNER JOIN genero g ON tv.genero = g.nombre_genero;
-
+INSERT INTO prestamos (num_socio, id_copia, fecha_prestacion, fecha_devolucion)
+SELECT DISTINCT
+    s.numero_socio,
+    c.id_copia,
+    CAST(tv.fecha_alquiler_texto AS DATE),
+    CAST(tv.fecha_devolucion AS DATE)
+FROM
+    tmp_videoclub tv
+INNER JOIN socio s ON tv.dni = s.dni
+INNER JOIN copias c ON tv.id_copia = c.id_copia;
 
 SELECT g.nombre_genero, COUNT(sgf.id_socio_genero_favorito) AS num_socios
 FROM genero g
-JOIN socio_genero_favorito sgf ON g.id_genero = sgf.id_genero_favorito
+JOIN pelicula p ON g.nombre_genero = p.genero
+JOIN copias c ON p.id_pelicula = c.id_pelicula
+JOIN prestamos pr ON c.id_copia = pr.id_copia
+JOIN socio s ON pr.num_socio = s.numero_socio
 GROUP BY g.nombre_genero;
 
 SELECT p.titulo, COUNT(pr.id_prestamos) AS num_alquileres
 FROM pelicula p
 JOIN copias c ON p.id_pelicula = c.id_pelicula
-JOIN prestamos pr ON c.id_copias = pr.id_pelicula 
+JOIN prestamos pr ON c.id_copia = pr.id_copia
 GROUP BY p.titulo;
 
 SELECT s.nombre, s.apellidos, COUNT(pr.id_prestamos) AS num_prestamos
@@ -755,12 +674,12 @@ GROUP BY s.nombre, s.apellidos;
 SELECT p.titulo
 FROM pelicula p
 JOIN copias c ON p.id_pelicula = c.id_pelicula
-LEFT JOIN prestamos pr ON c.id_copias = pr.id_pelicula 
+LEFT JOIN prestamos pr ON c.id_copia = pr.id_copia
 WHERE pr.id_prestamos IS NULL;
 
-
-SELECT s.nombre, s.apellidos, g.nombre_genero AS genero_favorito
+SELECT s.nombre, s.apellidos, p.genero AS genero_favorito
 FROM socio s
-JOIN socio_genero_favorito sgf ON s.numero_socio = sgf.num_socio
-JOIN genero g ON sgf.id_genero_favorito = g.id_genero;
-
+JOIN prestamos pr ON s.numero_socio = pr.num_socio
+JOIN copias c ON pr.id_copia = c.id_copia
+JOIN pelicula p ON c.id_pelicula = p.id_pelicula
+GROUP BY s.nombre, s.apellidos, p.genero;
